@@ -1,0 +1,17 @@
+<header>
+  <div><a href="/">WDE</a></div>
+  <nav>
+    <ul>
+      <!-- We are checking it from the value we assigned in the middleware check-auth  -->
+      <% if (locals.isAuth) { %>
+      <li>
+        <!-- If it wouldn't be a form, we could use DELETE as method, instead of POST (forms only uses get and post methods). -->
+        <form action="/logout" method="POST">
+          <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>" />
+          <button>Logout</button>
+        </form>
+      </li>
+      <% } %>
+    </ul>
+  </nav>
+</header>
