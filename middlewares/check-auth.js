@@ -9,6 +9,8 @@ function checkAuthStatus(req, res, next) {
   // We gonna set some variables in the locals in case the user is auth.
   res.locals.uid = uid;
   res.locals.isAuth = true;
+  // Since we pass the isAdmin value to the session (in the authentication util file), we can check if the user is auth and admin, checking with this middleware if there is session data and assigning it to locals.
+  res.locals.isAdmin = req.session.isAdmin
   next();
 }
 
