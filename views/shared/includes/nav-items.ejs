@@ -1,0 +1,26 @@
+<ul class="nav-items">
+    <% if (!locals.isAdmin) { %>
+    <li><a href="/">Shop</a></li>
+    <li><a href="/cart">Cart</a></li>
+    <% } %>
+    <!-- Here we want to make sure that orders is NOT accessible if u are not logged & u are an admin -->
+    <% if (locals.isAuth && !locals.isAdmin) { %>
+    <li><a href="/orders">Orders</a></li>
+    <% } %> <% if (locals.isAdmin) { %>
+    <li><a href="/admin/products">Manage Products</a></li>
+    <li><a href="/admin/orders">Manage Orders</a></li>
+    <% } %> <% if (!locals.isAuth) { %>
+    <li><a href="/signup">Signup</a></li>
+    <li><a href="/login">Login</a></li>
+    <% } %>
+    <!-- We are checking it from the value we assigned in the middleware check-auth  -->
+    <% if (locals.isAuth) { %>
+    <li>
+      <!-- If it wouldn't be a form, we could use DELETE as method, instead of POST (forms only uses get and post methods). -->
+      <form action="/logout" method="POST">
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>" />
+        <button>Logout</button>
+      </form>
+    </li>
+    <% } %>
+  </ul>
