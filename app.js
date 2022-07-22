@@ -24,6 +24,8 @@ app.set('views', path.join(__dirname, 'views'));
 
 // We serve that folder to the visitor so they can reach the files inside.
 app.use(express.static('public'));
+// The 1st param indicates the path to activate this static-serving middleware. In case a petition comes to the back with a path of /products/assets/images, it would enter in this middleware (/products/assets) and look inside the 'product-data' folder if there is any /image folder there to serve the files in it.
+app.use('/products/assets', express.static('product-data'))
 // This middleware allows us to get the values in the incoming requests (such as the data sent from a form). **extended: false only support regular form submission so to say
 app.use(express.urlencoded({ extended: false }));
 
