@@ -19,6 +19,11 @@ router.post(
 
 router.get('/products/:id', adminController.getUpdateProduct);
 
-router.post('/products/:id', adminController.updateProduct);
+// We need to use imageUploadMiddleware to parse the data from the incoming form with enctype multipart/form-data, if not the urlencoded middleware wont activate to get the req.body, we need this middleware for it.
+router.post(
+  '/products/:id',
+  imageUploadMiddleware,
+  adminController.updateProduct
+);
 
 module.exports = router;

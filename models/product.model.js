@@ -10,8 +10,7 @@ class Product {
     this.price = +productData.price; // Thanks to the plus, we force to get this value saved as int instead of string.
     this.description = productData.description;
     this.image = productData.image; // This will be the name of the image file with extension embedded.
-    this.imagePath = `product-data/images/${productData.image}`; // We create the path to the image saved on the server.
-    this.imageUrl = `/products/assets/images/${productData.image}`; // This should be the URL/path which is used on the front-end for requesting this image from the server.
+    this.updateImageData(); // We call this method to create the imagePath and imageUrl based on this.image of the obj.
     // It can happens that we dont have an ID from Mongo yet, so the toString() method would fail if its undefined. Thats why we use a conditional to create the id only if productData._id exists.
     if (productData._id) {
       this.id = productData._id.toString(); // So it retrieves the alphanumeric string and not the whole object (ObjectID("Alphanumeric string")).
@@ -37,7 +36,8 @@ class Product {
       error.code = 404;
       throw error;
     }
-    return product;
+    // Since product is the obj from the mongoDB (with a property _id instead of id), we gonna return a created obj from Product class, so it gives us back a property id.
+    return new Product(product);
   }
 
   static async findAll() {
@@ -45,6 +45,11 @@ class Product {
 
     // Since we dont have imagePath and imageUrl saved in the DB. We get the objects in the BD and initialize them with the Product class, so it creates the object with the same keys/values adding them the imagePath and imageUrl attributes.
     return products.map((productDocument) => new Product(productDocument));
+  }
+
+  updateImageData() {
+    this.imagePath = `product-data/images/${this.image}`; // We create the path to the image saved on the server.
+    this.imageUrl = `/products/assets/images/${this.image}`; // This should be the URL/path which is used on the front-end for requesting this image from the server.
   }
 
   async save() {
@@ -55,7 +60,24 @@ class Product {
       description: this.description,
       image: this.image,
     };
-    await db.getDb().collection('products').insertOne(productData);
+    // We check if there is an id when calling this method (since it can be created from scratch, without id) or to update an object already stored on DB with updateOne.
+    if (this.id) {
+      const productId = mongodb.ObjectId(this.id);
+      if (!this.image) {
+        delete productData.image; // In this case, we look if there is a image passed while calling this function. In case its undefined/null the image when we call save (e.g. we update some text and no the photo), we delete the undefine this.image so it doesnt change on the BD the image saved.
+      }
+      await db
+        .getDb()
+        .collection('products')
+        .updateOne({ _id: productId }, { $set: productData });
+    } else {
+      await db.getDb().collection('products').insertOne(productData);
+    }
+  }
+
+  async replaceImage(newImage) {
+    this.image = newImage;
+    this.updateImageData();
   }
 }
 
