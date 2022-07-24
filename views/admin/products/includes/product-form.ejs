@@ -15,11 +15,15 @@
       value="<%= product.title %>"
       required
     />
-  </p>
-  <p>
-    <label for="image">Image</label>
-    <input type="file" id="image" name="image" accept="image/png,image/jpg" <% if (imageRequired) { %> required <% } %>/>
-  </p>
+  </p> 
+  <div id="image-upload-control">
+    <p>
+      <label for="image">Image</label>
+      <input type="file" id="image" name="image" accept="image/png,image/jpg" <% if (imageRequired) { %> required <% } %>/>
+    </p>
+    <!-- We gonna use this img element to put a url to preview the image uploaded by the user, thx to JS in the front -->
+    <img src="" alt="Selected image">
+  </div>
   <p>
     <label for="summary">Summary</label>
     <input
