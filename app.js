@@ -11,10 +11,12 @@ const addCsrfTokenMiddleware = require('./middlewares/csrf-token');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
 const checkAuthStatusMiddleware = require('./middlewares/check-auth');
 const protectRoutesMiddleware = require('./middlewares/protect-routes');
+const cartMiddleware = require('./middlewares/cart');
 const authRoutes = require('./routes/auth.routes');
 const productsRoutes = require('./routes/products.routes');
 const baseRoutes = require('./routes/base.routes');
 const adminRoutes = require('./routes/admin.routes');
+const cartRoutes = require('./routes/cart.routes');
 
 const app = express();
 
@@ -28,7 +30,8 @@ app.use(express.static('public'));
 // The 1st param indicates the path to activate this static-serving middleware. In case a petition comes to the back with a path of /products/assets/images, it would enter in this middleware (/products/assets) and look inside the 'product-data' folder if there is any /image folder there to serve the files in it.
 app.use('/products/assets', express.static('product-data'));
 // This middleware allows us to get the values in the incoming requests (such as the data sent from a form). **extended: false only support regular form submission so to say
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false })); // Will look for form type requests.
+app.use(express.json()); // Will look for json type requests.
 
 const sessionConfig = createSessionConfig();
 
@@ -40,6 +43,9 @@ app.use(expressSession(sessionConfig));
 // It needs to be configured with sessions or cookies to work. Since the tokens are created and attached to a specific session/cookie.
 app.use(csrf());
 
+// This middleware will check and provide info (mainly will ensure that the res.locals.carts property exists) about the cart via sessions. If there is no cart on the session(cookie) of the user it will create a new one, and if there is one already saved we gonna reinitialize it. (more info in middlewares/cart).
+app.use(cartMiddleware);
+
 // After we use the csrf() package middleware, we can use our own middleware to generate the csrf token for that concrete req, since every req has his own token.
 // For example in signup.ejs (customer/auth), we pass the token thx to our own middleware using a hidden input (with the special _csrf name and the value that gets the res.locals) for example.
 app.use(addCsrfTokenMiddleware);
@@ -50,6 +56,7 @@ app.use(checkAuthStatusMiddleware);
 app.use(baseRoutes);
 app.use(authRoutes);
 app.use(productsRoutes);
+app.use('/cart', cartRoutes); // We put it before the protect routes and every single request coming to a path starting with /cart will look in this middleware.
 app.use(protectRoutesMiddleware); // Before we try to handle a request to the next routes (in this case, admin routes), we want to run the request with the protect-routes.js middleware, to be sure the user is authed and an admin. (It wont affect the errorHandlerMiddleware).
 app.use('/admin', adminRoutes); // The 1st parameter makes this middleware to check for all requests to a path starting with /admin (and then, whatever the routes names are in admin.routes.js, like /products would be => /admin/products).
 

@@ -22,7 +22,7 @@ function createSessionConfig() {
     store: createSessionStore(),
     // If we dont indicate the max age of the cookie of the session, it will be cleared whenever the user closes the browser.
     cookie: {
-      maxAge: 60 * 1000, // 2 days
+      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
     },
   };
 }
