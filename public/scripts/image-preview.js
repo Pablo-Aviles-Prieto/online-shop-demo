@@ -6,7 +6,6 @@ const imagePreviewElement = document.querySelector('#image-upload-control img');
 function updateImagePreview() {
   // We can access the files property of the input file element to get back an array (in this case, this will be an array with just 1 element).
   const files = imagePickerElement.files;
-  console.log('files', files);
 
   if (!files || files.length === 0) {
     // We want to set the display to none in case the preview img was shown in a previous change from the user.

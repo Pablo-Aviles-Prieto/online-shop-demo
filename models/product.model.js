@@ -36,7 +36,7 @@ class Product {
       error.code = 404;
       throw error;
     }
-    // Since product is the obj from the mongoDB (with a property _id instead of id), we gonna return a created obj from Product class, so it gives us back a property id.
+    // Since product is the obj from the mongoDB (with a property '_id' instead of 'id'), we gonna return a created obj from Product class, so it gives us back a property 'id'.
     return new Product(product);
   }
 
@@ -78,6 +78,12 @@ class Product {
   async replaceImage(newImage) {
     this.image = newImage;
     this.updateImageData();
+  }
+
+  async remove() {
+    // Here we are just deleting the image info in the DB, but not the image stored on the server.
+    const productId = new mongodb.ObjectId(this.id);
+    await db.getDb().collection('products').deleteOne({ _id: productId });
   }
 }
 
