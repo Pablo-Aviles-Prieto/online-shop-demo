@@ -32,7 +32,7 @@ class Product {
 
     if (!product) {
       // The built-in error class generates a new JS object with some internal error info and our own info. We can pass a string to the error obj, for example. Also we add a the code property to the error obj, and pass the status in it.
-      const error = new Error('Could not find product with the provided id!');
+      const error = new Error('Could not find any product with the provided id!');
       error.code = 404;
       throw error;
     }

@@ -10,6 +10,7 @@ const db = require('./data/database');
 const addCsrfTokenMiddleware = require('./middlewares/csrf-token');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
 const checkAuthStatusMiddleware = require('./middlewares/check-auth');
+const protectRoutesMiddleware = require('./middlewares/protect-routes');
 const authRoutes = require('./routes/auth.routes');
 const productsRoutes = require('./routes/products.routes');
 const baseRoutes = require('./routes/base.routes');
@@ -25,7 +26,7 @@ app.set('views', path.join(__dirname, 'views'));
 // We serve that folder to the visitor so they can reach the files inside.
 app.use(express.static('public'));
 // The 1st param indicates the path to activate this static-serving middleware. In case a petition comes to the back with a path of /products/assets/images, it would enter in this middleware (/products/assets) and look inside the 'product-data' folder if there is any /image folder there to serve the files in it.
-app.use('/products/assets', express.static('product-data'))
+app.use('/products/assets', express.static('product-data'));
 // This middleware allows us to get the values in the incoming requests (such as the data sent from a form). **extended: false only support regular form submission so to say
 app.use(express.urlencoded({ extended: false }));
 
@@ -49,6 +50,7 @@ app.use(checkAuthStatusMiddleware);
 app.use(baseRoutes);
 app.use(authRoutes);
 app.use(productsRoutes);
+app.use(protectRoutesMiddleware); // Before we try to handle a request to the next routes (in this case, admin routes), we want to run the request with the protect-routes.js middleware, to be sure the user is authed and an admin. (It wont affect the errorHandlerMiddleware).
 app.use('/admin', adminRoutes); // The 1st parameter makes this middleware to check for all requests to a path starting with /admin (and then, whatever the routes names are in admin.routes.js, like /products would be => /admin/products).
 
 // Custom middleware to handles errors
