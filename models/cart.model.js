@@ -1,3 +1,5 @@
+const Product = require('./product.model');
+
 // We are saving the info of the cart in the user's session.
 class Cart {
   // We give to items a default value (an empty array), in case there are no items saved in the cart.
@@ -6,6 +8,49 @@ class Cart {
     this.items = items;
     this.totalQuantity = totalQuantity;
     this.totalPrice = totalPrice;
+  }
+
+  async updatePrices() {
+    const productIds = this.items.map(function (item) {
+      return item.product.id;
+    });
+
+    const products = await Product.findMultiple(productIds);
+
+    const deletableCartItemProductIds = [];
+
+    for (const cartItem of this.items) {
+      const product = products.find(function (prod) {
+        return prod.id === cartItem.product.id;
+      });
+
+      if (!product) {
+        // product was deleted!
+        // "schedule" for removal from cart
+        deletableCartItemProductIds.push(cartItem.product.id);
+        continue; // Ensures that the next iteration of this for loop will start without going through the remaining code in that for loop first.
+      }
+
+      // product was not deleted
+      // set product data and total price to latest price from database
+      cartItem.product = product;
+      cartItem.totalPrice = cartItem.quantity * cartItem.product.price;
+    }
+
+    if (deletableCartItemProductIds.length > 0) {
+      this.items = this.items.filter(function (item) {
+        return deletableCartItemProductIds.indexOf(item.product.id) < 0;
+      });
+    }
+
+    // re-calculate cart totals
+    this.totalQuantity = 0;
+    this.totalPrice = 0;
+
+    for (const item of this.items) {
+      this.totalQuantity = this.totalQuantity + item.quantity;
+      this.totalPrice = this.totalPrice + item.totalPrice;
+    }
   }
 
   // Since a user can add multiple times an item, we cant just simple push it in the array. We gonna push the 1st time and if the item already exist, we increase the quantity of that item.

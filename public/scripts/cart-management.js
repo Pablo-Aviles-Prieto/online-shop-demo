@@ -1,7 +1,7 @@
 const addToCartButtonElement = document.querySelector(
   '#product-details button'
 );
-const cartBadgeElement = document.querySelector('.nav-items .badge');
+const cartBadges = document.querySelectorAll('.nav-items .badge'); // We use the querySelectorAll since there 2 badges, in the desktop and in the mobile menu (since in the mobile version we have an aside with another nav bar).
 
 async function addToCart() {
   const productId = addToCartButtonElement.dataset.productid;
@@ -33,7 +33,9 @@ async function addToCart() {
 
   const newTotalQuantity = responseData.newTotalItems;
 
-  cartBadgeElement.textContent = newTotalQuantity;
+  for (const cartBadge of cartBadges) {
+    cartBadge.textContent = newTotalQuantity;
+  }
 }
 
 addToCartButtonElement.addEventListener('click', addToCart);

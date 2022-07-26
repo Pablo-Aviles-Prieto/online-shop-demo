@@ -35,7 +35,7 @@ function updateCartItem(req, res) {
 
   const updatedItemData = cart.updateItem(
     req.body.productId,
-    req.body.quantity
+    +req.body.quantity // With the '+' we ensure that the quantity we update an item with is a number.
   );
 
   // We save the updated cart into the session, also will be saved in the session DB collection. (Since res.locals.cart will get reinitialized and lost this data if its not saved in req.session.cart, because the cart middleware checks the session.cart for every inc request, and set res.locals with the req.session data).

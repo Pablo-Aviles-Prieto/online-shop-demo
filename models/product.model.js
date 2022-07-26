@@ -32,7 +32,9 @@ class Product {
 
     if (!product) {
       // The built-in error class generates a new JS object with some internal error info and our own info. We can pass a string to the error obj, for example. Also we add a the code property to the error obj, and pass the status in it.
-      const error = new Error('Could not find any product with the provided id!');
+      const error = new Error(
+        'Could not find any product with the provided id!'
+      );
       error.code = 404;
       throw error;
     }
@@ -45,6 +47,22 @@ class Product {
 
     // Since we dont have imagePath and imageUrl saved in the DB. We get the objects in the BD and initialize them with the Product class, so it creates the object with the same keys/values adding them the imagePath and imageUrl attributes.
     return products.map((productDocument) => new Product(productDocument));
+  }
+
+  static async findMultiple(ids) {
+    const productIds = ids.map(function (id) {
+      return new mongodb.ObjectId(id);
+    });
+
+    const products = await db
+      .getDb()
+      .collection('products')
+      .find({ _id: { $in: productIds } }) // $in query operator is supported by mongodb. We want to find all the products where the product ID is one of the IDs specified in a given array. We passed an array of id's already converted with mongodb.ObjectId().
+      .toArray();
+
+    return products.map(function (productDocument) {
+      return new Product(productDocument);
+    });
   }
 
   updateImageData() {

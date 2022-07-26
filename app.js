@@ -12,6 +12,9 @@ const errorHandlerMiddleware = require('./middlewares/error-handler');
 const checkAuthStatusMiddleware = require('./middlewares/check-auth');
 const protectRoutesMiddleware = require('./middlewares/protect-routes');
 const cartMiddleware = require('./middlewares/cart');
+const updateCartPricesMiddleware = require('./middlewares/update-cart-prices');
+const notFoundMiddleware = require('./middlewares/not-found');
+
 const authRoutes = require('./routes/auth.routes');
 const productsRoutes = require('./routes/products.routes');
 const baseRoutes = require('./routes/base.routes');
@@ -46,6 +49,7 @@ app.use(csrf());
 
 // This middleware will check and provide info (mainly will ensure that the res.locals.carts property exists) about the cart via sessions. If there is no cart on the session(cookie) of the user it will create a new one, and if there is one already saved we gonna reinitialize it. (more info in middlewares/cart).
 app.use(cartMiddleware);
+app.use(updateCartPricesMiddleware); // Checking for every request so it updates the price of the cart.
 
 // After we use the csrf() package middleware, we can use our own middleware to generate the csrf token for that concrete req, since every req has his own token.
 // For example in signup.ejs (customer/auth), we pass the token thx to our own middleware using a hidden input (with the special _csrf name and the value that gets the res.locals) for example.
@@ -59,9 +63,13 @@ app.use(baseRoutes);
 app.use(authRoutes);
 app.use(productsRoutes);
 app.use('/cart', cartRoutes); // We put it before the protect routes and every single request coming to a path starting with /cart will look in this middleware.
-app.use(protectRoutesMiddleware); // Before we try to handle a request to the next routes (in this case, admin routes), we want to run the request with the protect-routes.js middleware, to be sure the user is authed and an admin. (It wont affect the errorHandlerMiddleware).
-app.use('/orders', orderRoutes) // We put it after the protectRoutesMiddleware since the order related routes are only available if user is logged in.
-app.use('/admin', adminRoutes); // The 1st parameter makes this middleware to check for all requests to a path starting with /admin (and then, whatever the routes names are in admin.routes.js, like /products would be => /admin/products).
+// app.use(protectRoutesMiddleware); // Before we try to handle a request to the next routes (in this case, admin routes), we want to run the request with the protect-routes.js middleware, to be sure the user is authed and an admin. (It wont affect the errorHandlerMiddleware).
+// To avoid that any invalid url provided by the user ends with an unauthorize response, we change and use the protect routes middleware just in the concrete routes, not before them, if not, it wouldnt reach the not found middleware in case someones enters an invalid url.
+app.use('/orders', protectRoutesMiddleware, orderRoutes); // We put it after the protectRoutesMiddleware since the order related routes are only available if user is logged in.
+app.use('/admin', protectRoutesMiddleware, adminRoutes); // The 1st parameter makes this middleware to check for all requests to a path starting with /admin (and then, whatever the routes names are in admin.routes.js, like /products would be => /admin/products).
+
+// We wanna use a middleware that activates when it wasnt any previous middleware that could handle the request. Except for errors that it will be handled by the error middleware.
+app.use(notFoundMiddleware);
 
 // Custom middleware to handles errors
 app.use(errorHandlerMiddleware);

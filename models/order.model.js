@@ -1,4 +1,5 @@
 const db = require('../data/database');
+const mongodb = require('mongodb');
 
 class Order {
   // We use the status property to set a value of how the transaction order is going on. For example, in case a user wants to reinitialize an already existing order
@@ -13,16 +14,68 @@ class Order {
       this.formattedDate = this.date.toLocaleDateString('en-US', {
         weekday: 'short',
         day: 'numeric',
-        month: 'lonh',
+        month: 'long',
         year: 'numeric',
       });
     }
     this.id = orderId;
   }
 
-  async save() {
+  static transformOrderDocument(orderDoc) {
+    return new Order(
+      orderDoc.productData,
+      orderDoc.userData,
+      orderDoc.status,
+      orderDoc.date,
+      orderDoc._id
+    );
+  }
+
+  static transformOrderDocuments(orderDocs) {
+    return orderDocs.map(this.transformOrderDocument);
+  }
+
+  static async findAll() {
+    const orders = await db
+      .getDb()
+      .collection('orders')
+      .find()
+      .sort({ _id: -1 }) // Sorted by id in descending order.
+      .toArray();
+
+    return this.transformOrderDocuments(orders);
+  }
+
+  static async findAllForUser(userId) {
+    const uid = new mongodb.ObjectId(userId);
+
+    const orders = await db
+      .getDb()
+      .collection('orders')
+      .find({ 'userData._id': uid })
+      .sort({ _id: -1 }) // Sorted by id in descending order.
+      .toArray();
+
+    return this.transformOrderDocuments(orders);
+  }
+
+  static async findById(orderId) {
+    const order = await db
+      .getDb()
+      .collection('orders')
+      .findOne({ _id: new mongodb.ObjectId(orderId) });
+
+    return this.transformOrderDocument(order);
+  }
+
+  save() {
     if (this.id) {
-      //updating
+      const orderId = new mongodb.ObjectId(this.id);
+
+      return db
+        .getDb()
+        .collection('orders')
+        .updateOne({ _id: orderId }, { $set: { status: this.status } });
     } else {
       const orderDocument = {
         userData: this.userData,
@@ -31,7 +84,7 @@ class Order {
         status: this.status,
       };
 
-      await db.getDb().collection('orders').insertOne(orderDocument);
+      return db.getDb().collection('orders').insertOne(orderDocument);
     }
   }
 }

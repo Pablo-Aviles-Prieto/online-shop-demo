@@ -1,8 +1,14 @@
 const Order = require('../models/order.model');
 const User = require('../models/user.model');
 
-function getOrders(req, res) {
-  res.render('customer/orders/all-orders');
+async function getOrders(req, res) {
+  try {
+    const orders = await Order.findAllForUser(res.locals.uid);
+    res.render('customer/orders/all-orders', { orders: orders });
+  } catch (error) {
+    next(error);
+    return;
+  }
 }
 
 async function addOrder(req, res, next) {
@@ -25,7 +31,7 @@ async function addOrder(req, res, next) {
   }
 
   // With this we clear all the data from the cart, since the data is stored in the session and then passed to the res.locals
-  req.session.cart = null; 
+  req.session.cart = null;
 
   res.redirect('/orders');
 }
