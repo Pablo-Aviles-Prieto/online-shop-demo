@@ -8,4 +8,6 @@ router.get('/', cartController.getCart); // /cart/
 
 router.post('/items', cartController.addCartItem); // /cart/items
 
+router.patch('/items', cartController.updateCartItem); // (/cart/items) We are updating just some parts of existing data, so we use patch.
+
 module.exports = router;

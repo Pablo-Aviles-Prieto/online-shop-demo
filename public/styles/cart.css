@@ -37,6 +37,16 @@
   color: var(--color-primary-500);
 }
 
+/* If we dont specify like this (calling an id element inside another id element), the previous rule (#cart-total p) would be considered more specific than just #cart-total-fallback and wouldn't affect */
+#cart-total #cart-total-fallback {
+  font-size: 1rem;
+  font-weight: normal;
+  cursor: pointer;
+  padding: 1rem;
+  background-color: var(--color-gray-700);
+  border: 1px solid var(--color-primary-400);
+}
+
 @media (min-width: 48rem) {
   .cart-item {
     flex-direction: row;

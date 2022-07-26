@@ -21,7 +21,7 @@ class Cart {
       // We check in the loop, if the item that is being looped has the same product.id that the one we pass to this method.
       if (item.product.id === product.id) {
         // We need to use item.quantity/totalPrice and not cartItem, since we want to get the quantity and totalPrice accumulated of that exactly item.
-        cartItem.quantity = item.quantity + 1;
+        cartItem.quantity = +item.quantity + 1;
         cartItem.totalPrice = item.totalPrice + product.price;
         // We want to update the item[i] (who matches in id) with the new quantity and price (since if it matched, it means that the item is already saved in the cart array).
         this.items[i] = cartItem;
@@ -36,6 +36,29 @@ class Cart {
     this.items.push(cartItem);
     this.totalQuantity++; // this.totalQuantity = this.totalQuantity + 1
     this.totalPrice += product.price; // this.totalPrice = this.totalPrice + product.price
+  }
+
+  updateItem(productId, newQuantity) {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (item.product.id === productId && newQuantity > 0) {
+        const cartItem = { ...item };
+        const quantityChange = newQuantity - item.quantity; // We need to know the new difference to increase or decrease the totalQuantity.
+        cartItem.quantity = newQuantity;
+        cartItem.totalPrice = newQuantity * item.product.price;
+        this.items[i] = cartItem;
+
+        this.totalQuantity = this.totalQuantity + quantityChange;
+        this.totalPrice += quantityChange * item.product.price; // For the totalPrice we increase or decrease (if the quantityChange is negative) the total price of the cart based on the quantityChange of the current product/item, multiplying it for the product price of that item.
+        // We return in the loop because we dont need to execute the next line since we already changed the item in the cart, so we dont want to push the item if it was already found in the array.
+        return { updatedItemPrice: cartItem.totalPrice }; // We return this to the cart.controller so we can pass it to the front and modify the updated price.
+      } else if (item.product.id === productId && newQuantity <= 0) {
+        this.items.splice(i, 1); // We want to delete (in case the newQuantity entered by the user is 0 or less), starting from the index of the 'i' and deleten just 1.
+        this.totalQuantity = this.totalQuantity - item.quantity; // We have access to the item properties (even if its sliced in the previous lines).
+        this.totalPrice -= item.totalPrice; // We have access to the item properties (even if its sliced in the previous lines).
+        return { updatedItemPrice: 0 };
+      }
+    }
   }
 }
 

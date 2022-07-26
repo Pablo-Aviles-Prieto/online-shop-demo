@@ -17,6 +17,7 @@ const productsRoutes = require('./routes/products.routes');
 const baseRoutes = require('./routes/base.routes');
 const adminRoutes = require('./routes/admin.routes');
 const cartRoutes = require('./routes/cart.routes');
+const orderRoutes = require('./routes/order.routes');
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use(cartMiddleware);
 
 // After we use the csrf() package middleware, we can use our own middleware to generate the csrf token for that concrete req, since every req has his own token.
 // For example in signup.ejs (customer/auth), we pass the token thx to our own middleware using a hidden input (with the special _csrf name and the value that gets the res.locals) for example.
+// In a AJAX request in the front, we use send the http request to the back with a json header and in the body of that request, we pass the _csrf property.
 app.use(addCsrfTokenMiddleware);
 // We need to call this middleware at least, after we create the session in expressSesion.
 app.use(checkAuthStatusMiddleware);
@@ -58,6 +60,7 @@ app.use(authRoutes);
 app.use(productsRoutes);
 app.use('/cart', cartRoutes); // We put it before the protect routes and every single request coming to a path starting with /cart will look in this middleware.
 app.use(protectRoutesMiddleware); // Before we try to handle a request to the next routes (in this case, admin routes), we want to run the request with the protect-routes.js middleware, to be sure the user is authed and an admin. (It wont affect the errorHandlerMiddleware).
+app.use('/orders', orderRoutes) // We put it after the protectRoutesMiddleware since the order related routes are only available if user is logged in.
 app.use('/admin', adminRoutes); // The 1st parameter makes this middleware to check for all requests to a path starting with /admin (and then, whatever the routes names are in admin.routes.js, like /products would be => /admin/products).
 
 // Custom middleware to handles errors

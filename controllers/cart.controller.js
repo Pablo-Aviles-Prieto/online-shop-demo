@@ -30,7 +30,29 @@ async function addCartItem(req, res) {
   });
 }
 
+function updateCartItem(req, res) {
+  const cart = res.locals.cart;
+
+  const updatedItemData = cart.updateItem(
+    req.body.productId,
+    req.body.quantity
+  );
+
+  // We save the updated cart into the session, also will be saved in the session DB collection. (Since res.locals.cart will get reinitialized and lost this data if its not saved in req.session.cart, because the cart middleware checks the session.cart for every inc request, and set res.locals with the req.session data).
+  req.session.cart = cart;
+
+  res.json({
+    message: 'Item updated',
+    updatedCartData: {
+      newTotalQuantity: cart.totalQuantity,
+      newTotalPrice: cart.totalPrice,
+      updatedItemPrice: updatedItemData.updatedItemPrice, // Since we return an object (in the cart.updateItem() method of the model) with the updatedItemPrice as property, we can access it easily.
+    },
+  });
+}
+
 module.exports = {
   addCartItem: addCartItem,
   getCart: getCart,
+  updateCartItem: updateCartItem,
 };
