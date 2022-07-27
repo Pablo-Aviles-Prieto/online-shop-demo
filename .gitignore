@@ -1,2 +1,3 @@
 node_modules
-product-data
+*.env
+product-data/*

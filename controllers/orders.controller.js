@@ -1,8 +1,6 @@
 // We import the stripe package and execute the function immediately to return it to the stripe const.
 // The string can be found in the stripe user menu, in api keys as secret key.
-const stripe = require('stripe')(
-  'sk_test_51LPud7IGOGcZQS8Z8EveOgjqhuk30LICxs8uy8GAYoeIqf8siuXBgbPZrP2BoAIJlPjm6acKa5KozBU6i6Yj9F0r00uEzny5b2'
-);
+const stripe = require('stripe')(process.env.STRIPE_KEY);
 // Its the shame that:
 // const stripe = require('stripe');
 // const stripeObj = stripe('privateToken');
@@ -28,6 +26,12 @@ async function addOrder(req, res, next) {
     userDocument = await User.findById(res.locals.uid);
   } catch (error) {
     return next(error);
+  }
+
+  // We ensure a user cant try to buy the products in the cart when he has 0 items (should be fixed in front, that when a user deletes all products, the button should disappear, but its too much work atm, I need to learn react, not keep working in DOM).
+  if (!cart.totalQuantity) {
+    res.status(400).redirect('/products');
+    return;
   }
 
   const order = new Order(cart, userDocument);
@@ -103,8 +107,8 @@ async function addOrder(req, res, next) {
     }),
     mode: 'payment',
     // We use our own path to our localhost and the routes for that petitions. Also we dont set .env variables.
-    success_url: `http://localhost:3000/orders/success`,
-    cancel_url: `http://localhost:3000/orders/failure`,
+    success_url: `${process.env.BACKEND_URL}/orders/success`,
+    cancel_url: `${process.env.BACKEND_URL}/orders/failure`,
   });
 
   // This is the actual redirect to the Stripe's website to make the page in a secure environment (When it finish, it should redirect to the previous indicated URLs depending how the transaction went).

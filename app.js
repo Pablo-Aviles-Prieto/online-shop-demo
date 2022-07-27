@@ -1,3 +1,4 @@
+require('dotenv').config();
 // Is our main-entry file that start node/express server. Handling and distributing the inc requests.
 const express = require('express');
 const path = require('path');
