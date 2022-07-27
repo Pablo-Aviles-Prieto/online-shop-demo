@@ -16,14 +16,17 @@
         </ul>
         <div id="cart-total">
             <p>Total: $<span id="cart-total-price"><%= locals.cart.totalPrice.toFixed(2) %></span></p>
-            <% if (locals.isAuth) { %>
+            <!-- We check that the user is authed and has more  than 0 items in the cart (0 is a falsy value) -->
+            <% if (locals.isAuth && locals.cart.totalQuantity) { %>
             <!-- We dont need more information in the form since we have the data of the cart in the session, also saved in the DB -->
             <form action="/orders" method="POST">
                 <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                 <button class="btn">Buy Products</button>
             </form>
+            <% } else if  (locals.isAuth && !locals.cart.totalQuantity) { %>
+            <p id="cart-total-fallback"><a href="/products">Start browsing the products availables.</a></p>
             <% } else { %>
-            <p id="cart-total-fallback"><a href="/login">Log in to proceed and purchase the items.</a></p>
+            <p id="cart-total-fallback"><a href="/login">Log in to proceed and make a purchase.</a></p>
             <% } %>
         </div>
     </main>
